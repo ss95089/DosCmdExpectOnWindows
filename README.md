@@ -19,6 +19,10 @@ Logs are output to the current log folder.
 5. Follow the display menu and press enter to execute the command.
 
 ```
+ ---
+## Image
+![movie](https://user-images.githubusercontent.com/67679613/195533179-bb3f9426-1d2b-4549-ad16-10e3c364a82d.gif)
+
 ---
 ### Download
 [WinExpect_v0.093.zip](https://github.com/ss95089/DosCmdExpectOnWindows/raw/main/dist/WinExpect_v0.093.zip)  
