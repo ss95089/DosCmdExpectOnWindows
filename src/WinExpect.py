@@ -1,5 +1,4 @@
 import pexpect.popen_spawn as psp
-import logging
 from termcolor import colored
 import sys
 import re
@@ -11,10 +10,6 @@ colorama.init()
 
 class WinExpect(object):
     def __init__(self, prompt, timeout, fileName):
-        self.formatter = '\n[%(asctime)s][%(levelname)s]\n%(message)s'
-        logging.basicConfig(filename='logs/{}_{}.log'.format(datetime.datetime.now().strftime('%Y%m%d-%H%M%S'), fileName),
-                            level=logging.INFO, format=self.formatter)
-        self.logger = logging.getLogger()
         self.wlog = open('logs/{}_{}_plain.log'.format(datetime.datetime.now().strftime('%Y%m%d-%H%M%S'), fileName), 'wb')
         self.process = psp.PopenSpawn('cmd', logfile=self.wlog)
         self.prompt = prompt
@@ -34,8 +29,6 @@ class WinExpect(object):
         if (exp_err):
             # マッチした前の文字列
             print(self.process.before.decode('shift-jis', errors='ignore').replace('\r\n', '\n'), end='')
-            msg = '{}'.format(self.process.before.decode('shift-jis', errors='ignore').replace('\r\n', '\n'))
-            self.logger.info(msg)
         else:
             # マッチした前の文字列
             print(self.process.before.decode('shift-jis', errors='ignore').replace('\r\n', '\n'), end='')
@@ -43,8 +36,6 @@ class WinExpect(object):
             print(colored(self.process.after.decode('shift-jis', errors='ignore').replace('\r\n', '\n'), 'magenta'))
             # マッチした後の文字列
             print(self.process.buffer.decode('shift-jis', errors='ignore').replace('\r\n', '\n'), end='')
-            msg = '{}{}{}'.format(self.process.before.decode('shift-jis', errors='ignore').replace('\r\n', '\n'), self.process.after.decode('shift-jis', errors='ignore').replace('\r\n', '\n'), self.process.buffer.decode('shift-jis', errors='ignore').replace('\r\n', '\n'))
-            self.logger.info(msg)
             if re.search('\)\s?\?', self.process.after.decode('shift-jis', errors='ignore')):
                 self.promptStr = "?"
             else:
@@ -63,7 +54,6 @@ class WinExpect(object):
             except Exception as ex:
                 self.cmd_readline(True)
                 print(colored('\n[TimeOutError] The prompt could not be detected.', 'red'))
-                self.logger.error('The prompt could not be detected.')
                 input_yn = input('[W]ait/[Q]uit/[I]nput: ').upper()
                 if input_yn.upper() == 'Q':
                     sys.exit(1)
@@ -129,6 +119,7 @@ with open(fileName, 'r',encoding="utf-8") as file:
                     if rs != '?':
                         proc.cmd_sendline('echo %ERRORLEVEL%', prompt, timeout)
                 elif cmd_key.upper() == 'I':
+                    flg0 = True
                     input_cmd = input('Input Command: ')
                     rs = proc.cmd_sendline(input_cmd, prompt, timeout)
                     if rs != '?':
