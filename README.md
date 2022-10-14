@@ -25,7 +25,7 @@ Logs are output to the current logs folder.
 
 ---
 ### Download
-[WinExpect_v0.093.zip](https://github.com/ss95089/DosCmdExpectOnWindows/raw/main/dist/WinExpect_v0.093.zip)  
+[WinExpect_v0.093.zip](https://github.com/ss95089/DosCmdExpectOnWindows/raw/main/dist/WinExpect_v0.094.zip)  
 
 ---
 ### Development environment
