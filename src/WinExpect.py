@@ -15,11 +15,6 @@ class WinExpect(object):
         self.prompt = prompt
         self.timeout = timeout
 
-        self.cmd_sendline('prompt $P[$T]$G')
-        self.process.expect('>', int(timeout))
-        print(self.process.before.decode('shift-jis', errors='ignore').replace('\r\n', '\n'), end='')
-        print(self.process.after.decode('shift-jis', errors='ignore').replace('\r\n', '\n'), end='')
-
     def cmd_readline(self, exp_err=False):
         self.promptStr = "@"
         if self.cmd != 'echo %ERRORLEVEL%':
@@ -69,76 +64,88 @@ class WinExpect(object):
                 break
         return(self.promptStr)
 
-parser = argparse.ArgumentParser()
+
+"""parser = argparse.ArgumentParser()
 parser.add_argument('-f', help='Name of command file to execute', required=True)
 args = parser.parse_args()
 fileName = args.f
-fileName = fileName.replace(".\\", '')
+fileName = fileName.replace(".\\", '')"""
+fileName = "cmd.txt"
 
 proc = WinExpect(['\>'], 3, fileName)
 prompt = ['\[.[0-9]\:[0-9][0-9]\:[0-9][0-9].[0-9][0-9]\]\>', '\)\s?\?']
 timeout = 20
 rawLabel = []
 flg1 = False
-with open(fileName, 'r',encoding="utf-8") as file:
-    lines = file.readlines()
-    i0 = 0
-    end = len(lines) - 1
-    for i1, c in enumerate(lines):
-        if c[:1] == '\t' and c[1:].strip() != "":
-            rawLabel.append(i1)
-    rs = '@'
-    while True:
-        if rs == '?':
-            input_cmd = input('Input Command: ')
-            rs = proc.cmd_sendline(input_cmd, prompt, timeout)
-            if rs != '?':
-                proc.cmd_sendline('echo %ERRORLEVEL%', prompt, timeout)
+
+proc.cmd_sendline('prompt $P[$T]$G')
+
+while True:
+    with open(fileName, 'r', encoding="utf-8") as file:
+        lines = file.readlines()
+        i0 = 0
+        end = len(lines) - 1
+        for i1, c in enumerate(lines):
+            if c[:1] == '\t' and c[1:].strip() != "":
+                rawLabel.append(i1)
+        rs = '@'
+        while True:
+            if rs == '?':
+                input_cmd = input('Input Command: ')
+                rs = proc.cmd_sendline(input_cmd, prompt, timeout)
+                if rs != '?':
+                    proc.cmd_sendline('echo %ERRORLEVEL%', prompt, timeout)
+            else:
+                flg0 = False
+                if lines[i0][:1] != '\t':
+                    if lines[i0].strip() != '':
+                        if not flg1:
+                            print(colored('\n-------- Comment -------\n', 'green', attrs=['bold']), end='')
+                        print(colored(lines[i0], 'green'), end='')
+                        flg1 = True
+                elif lines[i0][1:].strip() != "":
+                    flg1 = False
+                    cmd = lines[i0][1:].strip()
+                    while True:
+                        print(colored('\n------------------------', 'red', attrs=['bold']))
+                        print('[EXE CMD]:', colored(cmd, 'red', attrs=['bold']))
+                        cmd_key = input(' -> ExecuteOn[Enter]/[S]kip/[R]eturn/[I]nput/Re[L]oadFile/[Q]uit: ')
+                        if cmd_key == '':
+                            cmd_key = 'E'
+                            break
+                        elif cmd_key.upper() == 'I' or cmd_key.upper() == 'S' or cmd_key.upper() == 'R' or cmd_key.upper() == 'L' or cmd_key.upper() == 'Q':
+                            break
+                    if cmd_key.upper() == 'E':
+                        rs = proc.cmd_sendline(cmd, prompt, timeout)
+                        if rs != '?':
+                            proc.cmd_sendline('echo %ERRORLEVEL%', prompt, timeout)
+                    elif cmd_key.upper() == 'I':
+                        flg0 = True
+                        input_cmd = input('Input Command: ')
+                        rs = proc.cmd_sendline(input_cmd, prompt, timeout)
+                        if rs != '?':
+                            proc.cmd_sendline('echo %ERRORLEVEL%', prompt, timeout)
+                    elif cmd_key.upper() == 'S':
+                        pass
+                    elif cmd_key.upper() == 'R':
+                        flg0 = True
+                        for i2, c in enumerate(rawLabel):
+                            if c == i0 and i2 == 0:
+                                i0 = c
+                                print(rawLabel, i0)
+                                break
+                            elif c == i0:
+                                i0 = rawLabel[i2 - 1]
+                                break
+                    elif cmd_key.upper() == 'L':
+                        break
+                    elif cmd_key.upper() == 'Q':
+                        sys.exit()
+                if i0 == end:
+                    break
+                if not flg0:
+                    i0 = i0 + 1
+        if cmd_key.upper() == 'L':
+            pass
         else:
-            flg0 = False
-            if lines[i0][:1] != '\t':
-                if lines[i0].strip() != '':
-                    if not flg1:
-                        print(colored('\n-------- Comment -------\n', 'green', attrs=['bold']), end='')
-                    print(colored(lines[i0], 'green'), end='')
-                    flg1 = True
-            elif lines[i0][1:].strip() != "":
-                flg1 = False
-                cmd = lines[i0][1:].strip()
-                while True:
-                    print(colored('\n------------------------', 'red', attrs=['bold']))
-                    print('[EXE CMD]:', colored(cmd, 'red', attrs=['bold']))
-                    cmd_key = input(' -> ExecuteOn[Enter]/[S]kip/[R]eturn/[I]nput/[Q]uit: ')
-                    if cmd_key == '':
-                        cmd_key = 'E'
-                        break
-                    elif cmd_key.upper() == 'I' or cmd_key.upper() == 'S' or cmd_key.upper() == 'R' or cmd_key.upper() == 'Q':
-                        break
-                if cmd_key.upper() == 'E':
-                    rs = proc.cmd_sendline(cmd, prompt, timeout)
-                    if rs != '?':
-                        proc.cmd_sendline('echo %ERRORLEVEL%', prompt, timeout)
-                elif cmd_key.upper() == 'I':
-                    flg0 = True
-                    input_cmd = input('Input Command: ')
-                    rs = proc.cmd_sendline(input_cmd, prompt, timeout)
-                    if rs != '?':
-                        proc.cmd_sendline('echo %ERRORLEVEL%', prompt, timeout)
-                elif cmd_key.upper() == 'S':
-                    pass
-                elif cmd_key.upper() == 'R':
-                    flg0 = True
-                    for i2, c in enumerate(rawLabel):
-                        if c == i0 and i2 == 0:
-                            i0 = c
-                            print(rawLabel, i0)
-                            break
-                        elif c == i0:
-                            i0 = rawLabel[i2 - 1]
-                            break
-                elif cmd_key.upper() == 'Q':
-                    sys.exit()
-            if i0 == end:
-                break
-            if not flg0:
-                i0 = i0 + 1
+            break
