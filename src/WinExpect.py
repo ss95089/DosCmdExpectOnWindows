@@ -65,11 +65,11 @@ class WinExpect(object):
         return(self.promptStr)
 
 
-"""parser = argparse.ArgumentParser()
+parser = argparse.ArgumentParser()
 parser.add_argument('-f', help='Name of command file to execute', required=True)
 args = parser.parse_args()
 fileName = args.f
-fileName = fileName.replace(".\\", '')"""
+fileName = fileName.replace(".\\", '')
 fileName = "cmd.txt"
 
 proc = WinExpect(['\>'], 3, fileName)
