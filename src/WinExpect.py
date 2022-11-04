@@ -70,7 +70,6 @@ parser.add_argument('-f', help='Name of command file to execute', required=True)
 args = parser.parse_args()
 fileName = args.f
 fileName = fileName.replace(".\\", '')
-fileName = "cmd.txt"
 
 proc = WinExpect(['\>'], 3, fileName)
 prompt = ['\[.[0-9]\:[0-9][0-9]\:[0-9][0-9].[0-9][0-9]\]\>', '\)\s?\?']
